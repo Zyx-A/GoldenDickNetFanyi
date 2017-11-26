@@ -1,4 +1,4 @@
-# GoldenDickNetFanyi
+# GoldenDickOnlineTranslate
 适用于GoldenDick的在线翻译脚本。
 
 ### 使用须知：
