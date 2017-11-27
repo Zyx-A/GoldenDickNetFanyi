@@ -26,6 +26,7 @@ secretKey = 'mySecretKey'  # 替换为您的密钥
 # 是否以HTML格式显示
 SHOW_HTML = True  # may change this
 
+# 应用于GoldenDick显示的HTML代码
 HTML_TEMPLATE = Template(r'''<!DOCTYPE html>
 <html>
 <head>
@@ -61,6 +62,16 @@ class FanyiError(Exception):
     pass
 
 
+def judge_pure_english(keyword):
+    # 判断是否为纯英文
+    return all(ord(c) < 128 for c in keyword)
+
+
+def judge_mix_chinese(keyword):
+    # 判断是否含中文
+    return any(True for i in str(keyword) if u'\u4e00' <= i <= u'\u9fff')
+
+
 def fanyi(sentence):
     # 指定拼装信息
     apiurl = '/api/trans/vip/translate'
@@ -68,12 +79,25 @@ def fanyi(sentence):
 
     # sentence='I love you.\nAnd so on.'
     # 判断待翻译内容中是否有中文
-    if any(True for i in str(sentence) if u'\u4e00' <= i <= u'\u9fff'):
-        fromLang = 'zh'
-        toLang = 'en'
+    if judge_mix_chinese(sentence):
+        if sentence.__len__() <= 2000:
+            fromLang = 'zh'
+            toLang = 'en'
+        else:
+            raise FanyiError('[ERROR] This sentence is too long. It must be less than 2000 words.')
     else:
-        fromLang = 'auto'
-        toLang = 'zh'
+        if judge_pure_english(sentence):
+            if sentence.__len__() <= 6000:
+                fromLang = 'auto'
+                toLang = 'zh'
+            else:
+                raise FanyiError('[ERROR] This sentence is too long. It must be less than 6000 bytes.')
+        else:
+            if sentence.__len__() <= 2000:
+                fromLang = 'auto'
+                toLang = 'zh'
+            else:
+                raise FanyiError('[ERROR] This sentence is too long. It must be less than 2000 words.')
 
     # 计算MD5签名
     signMd5 = appid + sentence + str(salt) + secretKey
@@ -98,7 +122,7 @@ def fanyi(sentence):
         responseRead = (response.read())
         jsResponse = json.loads(responseRead)
     except ValueError:
-        raise FanyiError('invalid input')
+        raise FanyiError('[ERROR] invalid input')
 
     if not "error_code" in jsResponse.keys():
         word_src = None
@@ -114,7 +138,7 @@ def fanyi(sentence):
         # print(word_src.encode('utf8') + '\n\n' + translation.encode('utf8'))
         return translation
     else:
-        raise FanyiError('error_code: ' + jsResponse[error_code] + '\nerror_msg: ' + jsResponse[error_msg])
+        raise FanyiError('[ERROR] error_code: ' + jsResponse['error_code'] + '\nerror_msg: ' + jsResponse['error_msg'])
     response.close()
 
 
