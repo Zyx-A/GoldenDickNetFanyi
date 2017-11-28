@@ -84,20 +84,23 @@ def fanyi(sentence):
             fromLang = 'zh'
             toLang = 'en'
         else:
-            raise FanyiError('[ERROR] This sentence is too long. It must be less than 2000 words.')
+            print('[ERROR] This sentence is too long. It must be less than 2000 words.')
+            exit()
     else:
         if judge_pure_english(sentence):
             if sentence.__len__() <= 6000:
                 fromLang = 'auto'
                 toLang = 'zh'
             else:
-                raise FanyiError('[ERROR] This sentence is too long. It must be less than 6000 bytes.')
+                print('[ERROR] This sentence is too long. It must be less than 6000 bytes.')
+                exit()
         else:
             if sentence.__len__() <= 2000:
                 fromLang = 'auto'
                 toLang = 'zh'
             else:
-                raise FanyiError('[ERROR] This sentence is too long. It must be less than 2000 words.')
+                print('[ERROR] This sentence is too long. It must be less than 2000 words.')
+                exit()
 
     # 计算MD5签名
     signMd5 = appid + sentence + str(salt) + secretKey
@@ -110,12 +113,11 @@ def fanyi(sentence):
         sentence) + '&from=' + fromLang + '&to=' + toLang + '&salt=' + str(salt) + '&sign=' + sign
     api_url = "http://api.fanyi.baidu.com" + myurl
 
-    # 发起解析请求
-    request = urllib.request.Request(api_url)
-    # 获取返回结果
-    response = urllib.request.urlopen(request)
-
     try:
+        # 发起解析请求
+        request = urllib.request.Request(api_url)
+        # 获取返回结果
+        response = urllib.request.urlopen(request)
         # 获取Reponse的返回码（状态码）
         # responseStatus=response.code
         # 获取API返回内容，并对JSON格式内容做重组
@@ -137,9 +139,11 @@ def fanyi(sentence):
         # print('\n\n')
         # print(word_src.encode('utf8') + '\n\n' + translation.encode('utf8'))
         return translation
+        response.close()
     else:
-        raise FanyiError('[ERROR] error_code: ' + jsResponse['error_code'] + '\nerror_msg: ' + jsResponse['error_msg'])
-    response.close()
+        print('[ERROR] error_code: ' + jsResponse['error_code'] + '\n[ERROR] error_msg:  ' + jsResponse['error_msg'])
+        response.close()
+        exit()
 
 
 if __name__ == '__main__':
