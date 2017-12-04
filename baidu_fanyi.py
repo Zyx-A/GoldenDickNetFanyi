@@ -141,7 +141,12 @@ def fanyi(sentence):
         return translation
         response.close()
     else:
-        print('[ERROR] error_code: ' + jsResponse['error_code'] + '\n[ERROR] error_msg:  ' + jsResponse['error_msg'])
+        if not SHOW_HTML:
+            print(
+                '[ERROR] error_code: ' + jsResponse['error_code'] + '\n[ERROR] error_msg:  ' + jsResponse['error_msg'])
+        else:
+            print('[ERROR] error_code: ' + jsResponse['error_code'] + '<br>[ERROR] error_msg:  ' + jsResponse[
+                'error_msg'])
         response.close()
         exit()
 
